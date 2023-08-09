@@ -46,4 +46,7 @@ dependencies {
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     implementation(libs.volley)
+    implementation(libs.picasso)
+    implementation(libs.androidx.fragment.ktx)
+    implementation(libs.play.services.location)
 }
