@@ -35,6 +35,7 @@
             app:layout_constraintTop_toBottomOf="@+id/tvDate" />
 
         <TextView
+            android:id="@+id/tvTemp"
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:fontFamily="sans-serif-smallcaps"
