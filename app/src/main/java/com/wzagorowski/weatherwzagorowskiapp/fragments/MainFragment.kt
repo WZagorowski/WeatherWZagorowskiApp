@@ -11,13 +11,16 @@ import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.FragmentActivity
+import androidx.fragment.app.activityViewModels
 import com.android.volley.Request
 import com.android.volley.RequestQueue
 import com.android.volley.toolbox.StringRequest
 import com.android.volley.toolbox.Volley
 import com.google.android.material.tabs.TabLayoutMediator
-import com.wzagorowski.weatherwzagorowskiapp.Adapters.VpAdapter
-import com.wzagorowski.weatherwzagorowskiapp.Adapters.WeatherModel
+import com.squareup.picasso.Picasso
+import com.wzagorowski.weatherwzagorowskiapp.adapter.VpAdapter
+import com.wzagorowski.weatherwzagorowskiapp.adapter.WeatherModel
+import com.wzagorowski.weatherwzagorowskiapp.MainViewModel
 import com.wzagorowski.weatherwzagorowskiapp.databinding.FragmentMainBinding
 import org.json.JSONObject
 
@@ -29,6 +32,7 @@ class MainFragment : Fragment() {
     private val tList = listOf("HOURS", "DAYS")
     private lateinit var binding: FragmentMainBinding
     private lateinit var pLauncher: ActivityResultLauncher<String>
+    private val model: MainViewModel by activityViewModels()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -42,6 +46,7 @@ class MainFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         checkPermission()
         init()
+        updateCurrentCard()
         requestWeatherData("Wroclaw")
     }
 
@@ -51,6 +56,18 @@ class MainFragment : Fragment() {
         TabLayoutMediator(tabLayout, vP) { tab, pos ->
             tab.text = tList[pos]
         }.attach()
+    }
+
+    private fun updateCurrentCard() = with(binding) {
+        model.liveDataCurrent.observe(viewLifecycleOwner) {
+            val maxMinTemperature = "${it.maxTemp}°C/${it.minTemp}°C"
+            tvData.text = it.time
+            tvCity.text = it.city
+            tvCurrentTemp.text = it.currentTemp.ifEmpty { maxMinTemperature }
+            tvCondition.text = it.condition
+            tvMaxMin.text = if (it.currentTemp.isEmpty()) "" else maxMinTemperature
+            Picasso.get().load("https:${it.imageUrl}").into(imWeather)
+        }
     }
 
     private fun permissionListener() {
@@ -102,33 +119,36 @@ class MainFragment : Fragment() {
             val item = WeatherModel(
                 city = cityName,
                 time = day.getString("date"),
-                condition = day.getJSONObject("day").getJSONObject("condition")
-                    .getString("text"),
+                condition = day.getJSONObject("day").getJSONObject("condition").getString("text"),
                 currentTemp = "",
-                maxTemp = day.getJSONObject("day").getString("maxtemp_c"),
-                minTemp = day.getJSONObject("day").getString("mintemp_c"),
+                maxTemp = day.getJSONObject("day").getString("maxtemp_c").substringBefore('.'),
+                minTemp = day.getJSONObject("day").getString("mintemp_c").substringBefore('.'),
                 imageUrl = day.getJSONObject("day").getJSONObject("condition")
                     .getString("icon"),
                 hours = day.getJSONArray("hour").toString(),
             )
             listWeatherItems.add(item)
         }
+        model.liveDataList.value = listWeatherItems
         return listWeatherItems
     }
 
     private fun parseCurrentData(mainObject: JSONObject, weatherItem: WeatherModel) {
         val item = WeatherModel(
-            mainObject.getJSONObject("location").getString("name"),
-            mainObject.getJSONObject("current").getString("last_updated"),
-            mainObject.getJSONObject("current")
+            city = mainObject.getJSONObject("location").getString("name"),
+            time = mainObject.getJSONObject("current").getString("last_updated"),
+            condition = mainObject.getJSONObject("current")
                 .getJSONObject("condition").getString("text"),
-            mainObject.getJSONObject("current").getString("temp_c"),
-            weatherItem.maxTemp,
-            weatherItem.minTemp,
-            mainObject.getJSONObject("current")
+            currentTemp = "${mainObject.getJSONObject("current").getString("temp_c")
+                .substringBefore('.')}°C",
+            maxTemp = weatherItem.maxTemp.substringBefore('.'),
+            minTemp = weatherItem.minTemp.substringBefore('.'),
+            imageUrl = mainObject.getJSONObject("current")
                 .getJSONObject("condition").getString("icon"),
-            weatherItem.hours,
+            hours = weatherItem.hours,
         )
+
+        model.liveDataCurrent.value = item
         Log.d("MyLog", "Max: ${item.maxTemp}")
         Log.d("MyLog", "Min: ${item.minTemp}")
         Log.d("MyLog", "Time: ${item.hours}")
@@ -137,7 +157,6 @@ class MainFragment : Fragment() {
     companion object {
         const val API_KEY = "9ee7be6758134214861200311230407"
         const val API_LINK = "https://api.weatherapi.com/v1/forecast.json"
-
         @JvmStatic
         fun newInstance() = MainFragment()
     }
