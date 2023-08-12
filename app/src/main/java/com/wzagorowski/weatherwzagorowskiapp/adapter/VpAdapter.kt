@@ -1,4 +1,4 @@
-package com.wzagorowski.weatherwzagorowskiapp.Adapters
+package com.wzagorowski.weatherwzagorowskiapp.adapter
 
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity

@@ -1,4 +1,4 @@
-package com.wzagorowski.weatherwzagorowskiapp.Adapters
+package com.wzagorowski.weatherwzagorowskiapp.adapter
 
 data class WeatherModel(
     val city: String,
