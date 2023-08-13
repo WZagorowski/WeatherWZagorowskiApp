@@ -34,9 +34,9 @@ class HoursFragment : Fragment() {
     }
 
     private fun initRcView() = with(binding) {
-        rcView.layoutManager = LinearLayoutManager(activity)
+        rcViewHours.layoutManager = LinearLayoutManager(activity)
         adapter = WeatherAdapter(null)
-        rcView.adapter = adapter
+        rcViewHours.adapter = adapter
 
     }
 
@@ -48,7 +48,7 @@ class HoursFragment : Fragment() {
                 city = weatherItem.city,
                 time = (hoursArray[i] as JSONObject).getString("time"),
                 condition = (hoursArray[i] as JSONObject).getJSONObject("condition").getString("text"),
-                currentTemp = (hoursArray[i] as JSONObject).getString("temp_c").substringBefore('.') + "°C",
+                currentTemp = (hoursArray[i] as JSONObject).getString("temp_c").substringBefore('.') + "°",
                 maxTemp = "",
                 minTemp = "",
                 imageUrl = (hoursArray[i] as JSONObject).getJSONObject("condition").getString("icon"),
