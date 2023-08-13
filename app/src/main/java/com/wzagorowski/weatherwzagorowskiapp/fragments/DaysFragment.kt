@@ -29,7 +29,7 @@ class DaysFragment : Fragment(), WeatherAdapter.Listener {
         super.onViewCreated(view, savedInstanceState)
         init()
         model.liveDataList.observe(viewLifecycleOwner) {
-            adapter.submitList(it)
+            adapter.submitList(it.subList(1, it.size))
         }
     }
 
@@ -37,7 +37,6 @@ class DaysFragment : Fragment(), WeatherAdapter.Listener {
         adapter = WeatherAdapter(this@DaysFragment)
         rcViewDays.layoutManager = LinearLayoutManager(activity)
         rcViewDays.adapter = adapter
-
     }
 
     companion object {
